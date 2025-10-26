@@ -1,0 +1,13 @@
+/backend/app/__pycache__/
+/backend/app/api/__pycache__/
+/backend/app/core/__pycache__/
+/backend/app/models/__pycache__/
+/backend/fastf1_cache/
+/backend/.env
+
+/frontend/.env
+/frontend/node_modules/
+
+/backend/docs/
+/frontend/docs/
+/docs/

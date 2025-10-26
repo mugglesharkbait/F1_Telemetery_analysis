@@ -1,0 +1,149 @@
+.telemetry-charts {
+  margin-top: 32px;
+}
+
+.telemetry-summary {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 24px;
+  margin-bottom: 32px;
+  align-items: center;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 2px solid;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.summary-card h3 {
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0 0 8px 0;
+  letter-spacing: 3px;
+}
+
+.summary-card .team-name {
+  color: #aaaaaa;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.summary-card .lap-time {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.summary-card .lap-number {
+  color: #888888;
+  font-size: 12px;
+  margin: 0;
+}
+
+.vs-divider {
+  color: #e94560;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 4px;
+}
+
+.delta-card {
+  background: linear-gradient(135deg, #e94560 0%, #d63447 100%);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(233, 69, 96, 0.4);
+}
+
+.delta-card h4 {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.delta-card .delta-time {
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 900;
+  margin: 0 0 8px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.delta-card .max-speed-delta {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  margin: 0;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+}
+
+.chart-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.chart-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+}
+
+@media (max-width: 1200px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .telemetry-summary {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vs-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-card h3 {
+    font-size: 24px;
+  }
+
+  .summary-card .lap-time {
+    font-size: 18px;
+  }
+
+  .delta-card .delta-time {
+    font-size: 28px;
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+}
