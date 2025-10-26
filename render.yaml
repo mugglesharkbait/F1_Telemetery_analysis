@@ -6,19 +6,19 @@ services:
     region: oregon  # Change to your preferred region (oregon, frankfurt, singapore)
     plan: free  # Free tier - can upgrade to starter ($7/month) for better performance
     rootDir: backend
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11.0"
+        value: "3.11"
       - key: ENVIRONMENT
-        value: production
+        value: "production"
       - key: FASTF1_CACHE_ENABLED
         value: "true"
       - key: FASTF1_CACHE_DIR
-        value: /opt/render/project/src/fastf1_cache
+        value: "/opt/render/project/src/fastf1_cache"
       - key: CORS_ORIGINS
-        value: https://f1-telemetry-frontend.onrender.com  # Update after frontend is deployed
+        value: "https://f1-telemetry-frontend.onrender.com"
       - key: TELEMETRY_INTERPOLATION_POINTS
         value: "1000"
       - key: MAX_LAPS_PER_REQUEST

@@ -10,6 +10,8 @@ import fastf1
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import os
+from pathlib import Path
 
 from app.models.schemas import (
     # Events & Schedule
@@ -58,8 +60,11 @@ from app.core import (
 
 router = APIRouter()
 
-# Enable FastF1 cache
-fastf1.Cache.enable_cache(settings.FASTF1_CACHE_DIR)
+# Enable FastF1 cache - create directory if it doesn't exist
+if settings.FASTF1_CACHE_ENABLED:
+    cache_dir = Path(settings.FASTF1_CACHE_DIR)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    fastf1.Cache.enable_cache(str(cache_dir))
 
 # Cache for seasons data (computed once)
 _cached_seasons: Optional[List[int]] = None
