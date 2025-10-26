@@ -69,6 +69,9 @@ if settings.FASTF1_CACHE_ENABLED:
 # Cache for seasons data (computed once)
 _cached_seasons: Optional[List[int]] = None
 
+# Cache for drivers data to avoid repeated session loads
+_drivers_cache: dict = {}
+
 
 # ============================================================================
 # 1. EVENT & SCHEDULE DISCOVERY (4 endpoints)
@@ -231,9 +234,18 @@ async def get_drivers(year: int, event: str, session_type: str):
         # Validate and normalize session type
         normalized_session = validate_session_type(session_type)
 
+        # Create cache key
+        cache_key = f"{year}_{event}_{normalized_session}"
+
+        # Return from cache if available
+        if cache_key in _drivers_cache:
+            return _drivers_cache[cache_key]
+
         session = fastf1.get_session(year, event, normalized_session)
-        # Only load session results, not laps (much faster)
-        session.load()
+
+        # Load only results data - this is faster than loading everything
+        # Use laps=False, telemetry=False, weather=False to minimize data
+        session.load(laps=False, telemetry=False, weather=False)
 
         drivers = []
         results = session.results
@@ -260,6 +272,8 @@ async def get_drivers(year: int, event: str, session_type: str):
                     country_code=country_code
                 ))
 
+        # Cache the result
+        _drivers_cache[cache_key] = drivers
         return drivers
 
     try:
