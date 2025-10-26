@@ -10,23 +10,23 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
       - key: ENVIRONMENT
         value: production
       - key: FASTF1_CACHE_ENABLED
-        value: true
+        value: "true"
       - key: FASTF1_CACHE_DIR
         value: /opt/render/project/src/fastf1_cache
       - key: CORS_ORIGINS
         value: https://f1-telemetry-frontend.onrender.com  # Update after frontend is deployed
       - key: TELEMETRY_INTERPOLATION_POINTS
-        value: 1000
+        value: "1000"
       - key: MAX_LAPS_PER_REQUEST
-        value: 500
+        value: "500"
       - key: ENABLE_THREADPOOL
-        value: true
+        value: "true"
       - key: MAX_WORKERS
-        value: 4
+        value: "4"
     # Health check endpoint
     healthCheckPath: /health
     autoDeploy: true  # Auto-deploy on git push
@@ -35,8 +35,7 @@ services:
   - type: web
     name: f1-telemetry-frontend
     runtime: static
-    region: oregon  # Same region as backend for lower latency
-    plan: free
+    # Note: Static sites don't support 'region' or 'plan' parameters - deployed globally via CDN
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
