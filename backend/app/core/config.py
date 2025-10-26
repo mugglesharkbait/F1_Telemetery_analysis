@@ -2,13 +2,17 @@
 Configuration settings for F1 Telemetry API
 """
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
-import os
 
 
 class Settings(BaseSettings):
     """Application settings"""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+    )
 
     # Environment
     ENVIRONMENT: str = "development"
@@ -19,19 +23,13 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     DESCRIPTION: str = "High-performance Formula 1 telemetry and timing data API"
 
-    # CORS Settings - Parse comma-separated string from env
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8080",
-    ]
+    # CORS Settings - Store as string, parse to list via property
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:8080"
 
     @property
     def cors_origins_list(self) -> List[str]:
-        """Parse CORS_ORIGINS from environment variable if it's a string"""
-        if isinstance(self.CORS_ORIGINS, str):
-            return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
-        return self.CORS_ORIGINS
+        """Parse CORS_ORIGINS to list"""
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
     # FastF1 Settings
     FASTF1_CACHE_DIR: str = "fastf1_cache"
@@ -44,10 +42,6 @@ class Settings(BaseSettings):
     # Performance Settings
     ENABLE_THREADPOOL: bool = True
     MAX_WORKERS: int = 4
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 settings = Settings()

@@ -74,7 +74,14 @@ export const Dashboard: React.FC = () => {
       const seasonsList = await f1Api.getSeasons();
       setSeasons(seasonsList);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load seasons');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load seasons';
+
+      // Check if it's a network error (backend not responding)
+      if (errorMessage.includes('Network Error') || errorMessage.includes('ERR_CONNECTION_REFUSED') || errorMessage.includes('fetch')) {
+        setError('⏳ Backend is starting up or not reachable. Please wait a moment and try again...');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoadingSeasons(false);
     }
@@ -221,33 +228,55 @@ export const Dashboard: React.FC = () => {
       </header>
 
       <main className="dashboard-content">
-        <SelectionPanel
-          seasons={seasons}
-          events={events}
-          sessions={sessions}
-          drivers={drivers}
-          selectedYear={selectedYear}
-          selectedEvent={selectedEvent}
-          selectedSession={selectedSession}
-          selectedDriver1={selectedDriver1}
-          selectedDriver2={selectedDriver2}
-          onYearChange={handleYearChange}
-          onEventChange={handleEventChange}
-          onSessionChange={handleSessionChange}
-          onDriver1Change={setSelectedDriver1}
-          onDriver2Change={setSelectedDriver2}
-          onCompare={handleCompare}
-          loadingSeasons={loadingSeasons}
-          loadingEvents={loadingEvents}
-          loadingSessions={loadingSessions}
-          loadingDrivers={loadingDrivers}
-        />
+        {/* Show initial loading state when backend is starting */}
+        {loadingSeasons && seasons.length === 0 && !error && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Connecting to backend...</p>
+            <p className="loading-subtext">Loading F1 data (1950-2025)</p>
+          </div>
+        )}
 
+        {/* Show error with retry option */}
         {error && (
           <div className="error-message">
-            <span className="error-icon">⚠️</span>
-            {error}
+            <div>
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
+            </div>
+            {error.includes('Backend is starting') && (
+              <button onClick={loadSeasons} className="retry-button">
+                🔄 Retry Connection
+              </button>
+            )}
           </div>
+        )}
+
+        {/* Main content - only show when we have seasons or are not in initial loading */}
+        {(!loadingSeasons || seasons.length > 0 || error) && (
+          <>
+            <SelectionPanel
+              seasons={seasons}
+              events={events}
+              sessions={sessions}
+              drivers={drivers}
+              selectedYear={selectedYear}
+              selectedEvent={selectedEvent}
+              selectedSession={selectedSession}
+              selectedDriver1={selectedDriver1}
+              selectedDriver2={selectedDriver2}
+              onYearChange={handleYearChange}
+              onEventChange={handleEventChange}
+              onSessionChange={handleSessionChange}
+              onDriver1Change={setSelectedDriver1}
+              onDriver2Change={setSelectedDriver2}
+              onCompare={handleCompare}
+              loadingSeasons={loadingSeasons}
+              loadingEvents={loadingEvents}
+              loadingSessions={loadingSessions}
+              loadingDrivers={loadingDrivers}
+            />
+          </>
         )}
 
         {loadingTelemetry && (
