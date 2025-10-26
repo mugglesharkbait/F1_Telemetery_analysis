@@ -10,7 +10,7 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11"
+        value: "3.11.9"
       - key: ENVIRONMENT
         value: "production"
       - key: FASTF1_CACHE_ENABLED
