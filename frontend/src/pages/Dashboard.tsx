@@ -161,16 +161,25 @@ export const Dashboard: React.FC = () => {
         errorMessage = err.message;
 
         // Provide helpful messages for common issues
-        if (errorMessage.includes('No telemetry data')) {
+        if (errorMessage.includes('not been loaded') || errorMessage.includes('Session.load')) {
+          // FastF1 telemetry loading error
           if (selectedYear && selectedYear < 2011) {
-            errorMessage = `No telemetry data available for ${selectedYear}. Telemetry data is only available from 2011 onwards. For best results, use years 2018-2025.`;
+            errorMessage = `⚠️ Telemetry data is not available for ${selectedYear}. Telemetry data is only available from 2011 onwards. For best results, use years 2018-2025.`;
           } else if (selectedYear && selectedYear < 2018) {
-            errorMessage = `Limited or no telemetry data for ${selectedYear}. Some sessions may not have telemetry. For complete telemetry data, use years 2018-2025.`;
+            errorMessage = `⚠️ Telemetry data is not available for this session (${selectedEvent} ${selectedYear} ${selectedSession}). Some sessions from 2011-2017 may not have complete telemetry. For guaranteed telemetry data, use years 2018-2025.`;
           } else {
-            errorMessage = `${errorMessage}. This session may not have telemetry data available.`;
+            errorMessage = `⚠️ Telemetry data could not be loaded for this session. This session may not have telemetry data available, or the data may be corrupted. Try a different session or use years 2018-2025 for best results.`;
+          }
+        } else if (errorMessage.includes('No telemetry data')) {
+          if (selectedYear && selectedYear < 2011) {
+            errorMessage = `⚠️ No telemetry data available for ${selectedYear}. Telemetry data is only available from 2011 onwards. For best results, use years 2018-2025.`;
+          } else if (selectedYear && selectedYear < 2018) {
+            errorMessage = `⚠️ Limited or no telemetry data for ${selectedYear}. Some sessions may not have telemetry. For complete telemetry data, use years 2018-2025.`;
+          } else {
+            errorMessage = `⚠️ ${errorMessage}. This session may not have telemetry data available.`;
           }
         } else if (errorMessage.includes('No laps found')) {
-          errorMessage = `${errorMessage}. This driver may not have participated in this session.`;
+          errorMessage = `⚠️ ${errorMessage}. This driver may not have participated in this session.`;
         }
       }
 

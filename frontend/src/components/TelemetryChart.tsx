@@ -3,7 +3,7 @@
  * Displays speed, throttle, brake, gear comparison charts
  */
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,

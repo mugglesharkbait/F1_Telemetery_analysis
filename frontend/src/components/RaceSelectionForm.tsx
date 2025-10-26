@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import f1ApiService from '../services/f1ApiService';
 import { RaceEvent, SessionInfo } from '../types/f1Data';
 
