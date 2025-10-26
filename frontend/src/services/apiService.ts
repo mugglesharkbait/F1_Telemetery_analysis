@@ -25,7 +25,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 // Axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 90000, // 90 seconds (first data load can be very slow on free tier)
+  timeout: 900000, // 90 seconds (first data load can be very slow on free tier)
   headers: {
     'Content-Type': 'application/json',
   },
