@@ -2,6 +2,8 @@
 
 A full-stack web application for comparing Formula 1 driver telemetry data, built with FastAPI and React.
 
+The app is deployed on [render](render.com) at: https://f1-telemetry-frontend.onrender.com/ 
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![React](https://img.shields.io/badge/react-18.3-blue.svg)
