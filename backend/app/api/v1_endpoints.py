@@ -232,7 +232,8 @@ async def get_drivers(year: int, event: str, session_type: str):
         normalized_session = validate_session_type(session_type)
 
         session = fastf1.get_session(year, event, normalized_session)
-        session.load(laps=True)
+        # Only load session results, not laps (much faster)
+        session.load()
 
         drivers = []
         results = session.results

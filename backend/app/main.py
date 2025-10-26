@@ -23,10 +23,19 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Support wildcard for development, specific origins for production
+cors_origins = settings.cors_origins_list
+allow_credentials = True
+
+# If wildcard is specified, use it but disable credentials
+if "*" in cors_origins:
+    cors_origins = ["*"]
+    allow_credentials = False
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
