@@ -1,13 +1,37 @@
+# Python
 /backend/app/__pycache__/
 /backend/app/api/__pycache__/
 /backend/app/core/__pycache__/
 /backend/app/models/__pycache__/
 /backend/fastf1_cache/
 /backend/.env
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
 
-/frontend/.env
+# Frontend
 /frontend/node_modules/
+/frontend/dist/
+/frontend/.env
+/frontend/.env.local
 
+# Keep .env.development and .env.production for deployment
+!/frontend/.env.development
+!/frontend/.env.production
+
+# Docs
 /backend/docs/
 /frontend/docs/
 /docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

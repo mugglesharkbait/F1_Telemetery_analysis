@@ -1,0 +1,71 @@
+services:
+  # Backend - FastAPI Service
+  - type: web
+    name: f1-telemetry-backend
+    runtime: python
+    region: oregon  # Change to your preferred region (oregon, frankfurt, singapore)
+    plan: free  # Free tier - can upgrade to starter ($7/month) for better performance
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ENVIRONMENT
+        value: production
+      - key: FASTF1_CACHE_ENABLED
+        value: true
+      - key: FASTF1_CACHE_DIR
+        value: /opt/render/project/src/fastf1_cache
+      - key: CORS_ORIGINS
+        value: https://f1-telemetry-frontend.onrender.com  # Update after frontend is deployed
+      - key: TELEMETRY_INTERPOLATION_POINTS
+        value: 1000
+      - key: MAX_LAPS_PER_REQUEST
+        value: 500
+      - key: ENABLE_THREADPOOL
+        value: true
+      - key: MAX_WORKERS
+        value: 4
+    # Health check endpoint
+    healthCheckPath: /health
+    autoDeploy: true  # Auto-deploy on git push
+
+  # Frontend - Static Site
+  - type: web
+    name: f1-telemetry-frontend
+    runtime: static
+    region: oregon  # Same region as backend for lower latency
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    # SPA routing - all routes redirect to index.html
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://f1-telemetry-backend.onrender.com/api/v1  # Backend URL
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    autoDeploy: true
+
+# Database (optional - for future use)
+# databases:
+#   - name: f1-telemetry-db
+#     databaseName: f1_telemetry
+#     user: f1_user
+#     plan: free
