@@ -71,6 +71,48 @@ _cached_seasons: Optional[List[int]] = None
 # Cache for drivers data to avoid repeated session loads
 _drivers_cache: dict = {}
 
+# Cache for session objects to avoid repeated loads (MAJOR PERFORMANCE IMPROVEMENT)
+# Key format: "{year}_{event}_{session_type}_{load_signature}"
+_session_cache: dict = {}
+_session_cache_max_size = 20  # Keep last 20 sessions in memory
+
+
+def get_cached_session(year: int, event: str, session_type: str, **load_params):
+    """
+    Get a cached session object or load it fresh if not in cache.
+    This dramatically improves performance by avoiding repeated session loads.
+
+    Args:
+        year: Season year
+        event: Event identifier
+        session_type: Session type (already normalized)
+        **load_params: Parameters for session.load() (e.g., telemetry=True, laps=True)
+
+    Returns:
+        Loaded FastF1 session object
+    """
+    # Create cache key including load parameters
+    load_sig = "_".join(f"{k}={v}" for k, v in sorted(load_params.items()))
+    cache_key = f"{year}_{event}_{session_type}_{load_sig}"
+
+    # Return cached session if available
+    if cache_key in _session_cache:
+        return _session_cache[cache_key]
+
+    # Load fresh session
+    session = fastf1.get_session(year, event, session_type)
+    session.load(**load_params)
+
+    # Maintain cache size limit (FIFO eviction)
+    if len(_session_cache) >= _session_cache_max_size:
+        # Remove oldest entry
+        oldest_key = next(iter(_session_cache))
+        del _session_cache[oldest_key]
+
+    # Cache the loaded session
+    _session_cache[cache_key] = session
+    return session
+
 
 # ============================================================================
 # 1. EVENT & SCHEDULE DISCOVERY (4 endpoints)
@@ -305,8 +347,11 @@ async def get_session_results(year: int, event: str, session_type: str):
     def _get_results():
         normalized_session = validate_session_type(session_type)
 
-        session = fastf1.get_session(year, event, normalized_session)
-        session.load()
+        # Use cached session with selective loading - only need results, not telemetry/laps
+        session = get_cached_session(
+            year, event, normalized_session,
+            laps=False, telemetry=False, weather=False, messages=False
+        )
 
         results_data = []
         results_df = session.results
@@ -400,8 +445,11 @@ async def get_laps(
     def _get_laps():
         normalized_session = validate_session_type(session_type)
 
-        session = fastf1.get_session(year, event, normalized_session)
-        session.load(laps=True)
+        # Use cached session with selective loading - only need laps data
+        session = get_cached_session(
+            year, event, normalized_session,
+            laps=True, telemetry=False, weather=False, messages=False
+        )
 
         laps_df = session.laps
 
@@ -501,9 +549,6 @@ async def compare_telemetry(
     def _compare_telemetry():
         normalized_session = validate_session_type(session_type)
 
-        # Load session
-        session = fastf1.get_session(year, event, normalized_session)
-
         # Check if this year likely has telemetry based on year
         # Proactively reject years that definitely don't have telemetry
         if year < 2011:
@@ -513,10 +558,13 @@ async def compare_telemetry(
                 f"For complete telemetry data, please use years 2018-2025."
             )
 
-        # Try to load session with telemetry
-        # IMPORTANT: Load everything (telemetry, laps, and results for team colors)
+        # Load session with caching (MAJOR PERFORMANCE IMPROVEMENT)
+        # Use selective loading - only telemetry, laps, and results (not weather/messages/car data)
         try:
-            session.load()
+            session = get_cached_session(
+                year, event, normalized_session,
+                telemetry=True, laps=True, weather=False, messages=False
+            )
         except Exception as e:
             error_msg = str(e)
             # Handle cases where telemetry loading fails
@@ -681,8 +729,11 @@ async def get_circuit_info(year: int, event: str):
     """
     def _get_circuit():
         # Use Race session to get circuit info
-        session = fastf1.get_session(year, event, 'R')
-        session.load(laps=True)
+        # Need laps=True to get telemetry for track coordinates
+        session = get_cached_session(
+            year, event, 'R',
+            laps=True, telemetry=True, weather=False, messages=False
+        )
 
         # Get circuit info
         circuit_info = session.get_circuit_info()
@@ -753,8 +804,11 @@ async def get_weather(year: int, event: str, session_type: str):
     def _get_weather():
         normalized_session = validate_session_type(session_type)
 
-        session = fastf1.get_session(year, event, normalized_session)
-        session.load(weather=True)
+        # Use cached session with selective loading - only need weather data
+        session = get_cached_session(
+            year, event, normalized_session,
+            laps=False, telemetry=False, weather=True, messages=False
+        )
 
         weather_points = []
         weather_df = session.weather_data
@@ -829,8 +883,11 @@ async def get_team_colors(year: int):
 
         # Get first race
         first_event = schedule.iloc[0]['EventName']
-        session = fastf1.get_session(year, first_event, 'R')
-        session.load(laps=True)
+        # Use cached session with selective loading - only need results for team colors
+        session = get_cached_session(
+            year, first_event, 'R',
+            laps=False, telemetry=False, weather=False, messages=False
+        )
 
         teams = []
         results = session.results
