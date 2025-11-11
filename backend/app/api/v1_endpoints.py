@@ -50,7 +50,6 @@ from app.core import (
     format_timedelta,
     timedelta_to_seconds,
     safe_get,
-    get_team_color,
     interpolate_telemetry,
     calculate_delta_time,
     get_compound_colors,
@@ -476,8 +475,8 @@ async def compare_telemetry(
     year: int = Query(..., description="Season year"),
     event: str = Query(..., description="Event identifier"),
     session_type: str = Query(..., description="Session type"),
-    driver1: str = Query(..., description="First driver abbreviation"),
-    driver2: str = Query(..., description="Second driver abbreviation"),
+    driver1: str = Query(..., description="First driver (abbreviation like 'VER' or number like '1')"),
+    driver2: str = Query(..., description="Second driver (abbreviation like 'PIA' or number like '81')"),
     lap1: Optional[int] = Query(None, description="Lap number for driver1 (default: fastest)"),
     lap2: Optional[int] = Query(None, description="Lap number for driver2 (default: fastest)")
 ):
@@ -491,8 +490,8 @@ async def compare_telemetry(
         year: Season year
         event: Event identifier
         session_type: Session type
-        driver1: First driver abbreviation
-        driver2: Second driver abbreviation
+        driver1: First driver (abbreviation or driver number)
+        driver2: Second driver (abbreviation or driver number)
         lap1: Specific lap for driver1 (optional)
         lap2: Specific lap for driver2 (optional)
 
@@ -515,8 +514,9 @@ async def compare_telemetry(
             )
 
         # Try to load session with telemetry
+        # IMPORTANT: Load everything (telemetry, laps, and results for team colors)
         try:
-            session.load(telemetry=True, laps=True)
+            session.load()
         except Exception as e:
             error_msg = str(e)
             # Handle cases where telemetry loading fails
@@ -570,9 +570,32 @@ async def compare_telemetry(
         # Calculate delta time
         delta = calculate_delta_time(tel1, tel2, distance_axis)
 
-        # Get team colors
-        team1_color = get_team_color(safe_get(lap1_data, 'Team', 'Unknown'))
-        team2_color = get_team_color(safe_get(lap2_data, 'Team', 'Unknown'))
+        # Get team colors from session results
+        # Support both driver abbreviation (e.g., "VER") and driver number (e.g., "1")
+        results = session.results
+        team1_color = '#CCCCCC'
+        team2_color = '#CCCCCC'
+
+        if results is not None and not results.empty:
+            # Try to match by abbreviation first, then by driver number
+            driver1_results = results[results['Abbreviation'] == driver1]
+            if driver1_results.empty:
+                # Try matching by driver number (convert to string for comparison)
+                driver1_results = results[results['DriverNumber'].astype(str) == str(driver1)]
+
+            if not driver1_results.empty:
+                team1_color = safe_get(driver1_results.iloc[0], 'TeamColor', 'CCCCCC')
+                team1_color = f"#{team1_color}" if not team1_color.startswith('#') else team1_color
+
+            # Same for driver2
+            driver2_results = results[results['Abbreviation'] == driver2]
+            if driver2_results.empty:
+                # Try matching by driver number (convert to string for comparison)
+                driver2_results = results[results['DriverNumber'].astype(str) == str(driver2)]
+
+            if not driver2_results.empty:
+                team2_color = safe_get(driver2_results.iloc[0], 'TeamColor', 'CCCCCC')
+                team2_color = f"#{team2_color}" if not team2_color.startswith('#') else team2_color
 
         # Build response
         lap1_info = LapInfo(
